@@ -227,6 +227,14 @@ public class Constants {
             f2[2]=3800;
             f2[3]=4800;
         }
+        // Kass's Samsung Galaxy S9 - separate volume calibration due to probe unit variation
+        else if (android_id.equals("cb567d675f7452b0")) {
+            phone="kassPhone";
+            f2[0]=1900;
+            f2[1]=2900;
+            f2[2]=3900;
+            f2[3]=4900;
+        }
         else {
             phone="unknownPhone";
             f2[0]=2016;
@@ -308,10 +316,10 @@ public class Constants {
     public static void populateVolume(Context context) {
         float[]vols=new float[f1.length];
         if (phone.equals("kenyaA")) {
-            vols[0]=.5f;
-            vols[1]=.5f;
-            vols[2]=.5f;
-            vols[3]=.6f;
+            vols[0]=.5f; // .5f 2kHz too loud
+            vols[1]=.5f; // .3f 3 kHz too small
+            vols[2]=.5f; // 4f kHz too small
+            vols[3]=.6f; // 5f kHz too loud
             SEAL_CHECK_THRESH=130;
         }
         else if (phone.equals("kenyaB")) {
@@ -347,6 +355,14 @@ public class Constants {
             vols[1]=.3f;
             vols[2]=.3f;
             vols[3]=.3f;
+            SEAL_CHECK_THRESH=130;
+        }
+        // Kass's Samsung Galaxy S9 - tuned with sound level meter targeting ~65 dB SPL
+        else if (phone.equals("kassPhone")) {
+            vols[0]=.15f;   // 2 kHz (prev: .12)
+            vols[1]=.45f;   // 3 kHz (prev: .50)
+            vols[2]=.45f;   // 4 kHz (prev: .35)
+            vols[3]=.50f;   // 5 kHz (prev: .45)
             SEAL_CHECK_THRESH=130;
         }
         else {
@@ -411,6 +427,23 @@ public class Constants {
 
             vol1[3]=1f;
             vol2[3]=1f;
+        }
+        // KASS CHANGE: f1/f2 relative tone scaling for kassPhone.
+        // vol1 controls f1 level, vol2 controls f2 level relative to f1.
+        // These match the kenyaX defaults as no additional f1/f2 balance adjustment
+        // was needed — only the base vols (above) required tuning for this probe unit.
+        else if (phone.equals("kassPhone")) {
+            vol1[0]=1f;
+            vol2[0]=.2f;   // 2 kHz f2 scaling
+
+            vol1[1]=1f;
+            vol2[1]=.9f;   // 3 kHz f2 scaling
+
+            vol1[2]=1f;
+            vol2[2]=1f;    // 4 kHz f2 scaling
+
+            vol1[3]=1f;
+            vol2[3]=1f;    // 5 kHz f2 scaling
         }
         else {
             vol1[0]=1f;

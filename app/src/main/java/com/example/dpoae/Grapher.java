@@ -49,14 +49,14 @@ public class Grapher {
     }
 
     public static void graphHelper2(Activity av, LineChart lineChart, List<Entry> lineData1, List<Entry>lineData2) {
-        LineDataSet data1 = new LineDataSet(lineData1, "");
+        LineDataSet data1 = new LineDataSet(lineData1, "Signal");
         data1.setColors(new int[] {av.getColor(R.color.colorPrimaryDark)});
         data1.setCircleColor(av.getColor(R.color.colorPrimaryDark));
         data1.setValueTextSize(15f);
         data1.setDrawCircleHole(true);
         data1.setCircleHoleColor(av.getColor(R.color.colorPrimaryDark));
 
-        LineDataSet data2 = new LineDataSet(lineData2, "");
+        LineDataSet data2 = new LineDataSet(lineData2, "Noise floor");
         data2.setColors(new int[] {av.getColor(R.color.colorDarkRed)});
         data2.setCircleColor(av.getColor(R.color.colorDarkRed));
         data2.setValueTextSize(15f);
@@ -88,7 +88,8 @@ public class Grapher {
         lineChart.getXAxis().setTextSize(15);
         lineChart.getAxisLeft().setTextSize(15);
 
-        lineChart.getLegend().setEnabled(false);   // Hide the legend.
+        lineChart.getLegend().setEnabled(true);
+        lineChart.setContentDescription("Line chart showing Signal (blue) and Noise floor (red) SNR levels by frequency.");
 
         lineChart.notifyDataSetChanged();
         lineChart.invalidate();
@@ -98,13 +99,17 @@ public class Grapher {
         BarDataSet dataset = new BarDataSet(data,"");
 
         int[] carray;
+        boolean[] passFlags = null;
         if (Constants.complete==null) {
             carray = new int[] {av.getColor(R.color.colorDarkGreen)};
         }
         else {
             carray = new int[Constants.complete.length];
+            passFlags = new boolean[Constants.complete.length];
             for (int i = 0; i < Constants.complete.length; i++) {
-                if (Constants.complete[i]||Math.ceil(data.get(i).getY()) >=Constants.SNR_THRESHS[i]) {
+                boolean passes = Constants.complete[i] || Math.ceil(data.get(i).getY()) >= Constants.SNR_THRESHS[i];
+                passFlags[i] = passes;
+                if (passes) {
                     Log.e("justin","colorgreen-"+i);
                     carray[i] = av.getColor(R.color.colorDarkGreen);
                 } else {
@@ -116,12 +121,26 @@ public class Grapher {
 
         dataset.setColors(carray);
         dataset.setValueTextSize(15f);
+        dataset.setValueTextColor(android.graphics.Color.BLACK);
+        dataset.setValueFormatter(new MyValueFormatter(passFlags));
+
+        // Build a text summary so screen readers can describe the chart
+        StringBuilder desc = new StringBuilder("DPOAE results by frequency.");
+        if (passFlags != null && Constants.octaves != null) {
+            for (int i = 0; i < passFlags.length && i < data.size(); i++) {
+                int freqHz = i < Constants.octaves.size() ? Constants.octaves.get(i) : 0;
+                int freqKHz = (int) Math.round(freqHz / 1000.0);
+                int snr = (int) Math.ceil(data.get(i).getY());
+                String outcome = passFlags[i] ? "Pass" : "Refer";
+                desc.append(" ").append(freqKHz).append(" kHz: ").append(snr).append(" dB, ").append(outcome).append(".");
+            }
+        }
+        barChart.setContentDescription(desc.toString());
 
         BarData barData = new BarData(dataset);
         barChart.setData(barData);
         barData.setBarWidth(.5f);
-        barData.setValueFormatter(new MyValueFormatter());
-    
+
         barChart.setDescription(null);    // Hide the description
         barChart.getAxisRight().setDrawLabels(false);
         barChart.getAxisRight().setAxisMinimum(-10);

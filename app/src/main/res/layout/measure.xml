@@ -130,6 +130,7 @@
         android:layout_width="match_parent"
         android:layout_height="180dp"
         android:layout_marginTop="0dp"
+        android:contentDescription="DPOAE results chart. Results not yet available."
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/result" />
@@ -139,6 +140,7 @@
         android:layout_width="match_parent"
         android:layout_height="180dp"
         android:visibility="gone"
+        android:contentDescription="Line chart showing Signal and Noise floor levels by frequency."
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/barchart" />
@@ -184,6 +186,7 @@
         app:layout_constraintStart_toStartOf="parent"
         android:gravity="center"
         android:visibility="visible"
+        android:accessibilityLiveRegion="polite"
         app:layout_constraintTop_toBottomOf="@+id/leftButton" />
 
     <ImageView
@@ -191,6 +194,9 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="10dp"
+        android:contentDescription="Increase patient ID"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="@+id/textInputLayout1"
         app:layout_constraintStart_toEndOf="@+id/textInputLayout1"
         app:layout_constraintTop_toTopOf="@+id/textInputLayout1"
@@ -201,6 +207,9 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="10dp"
+        android:contentDescription="Decrease patient ID"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="@+id/textInputLayout1"
         app:layout_constraintStart_toEndOf="@+id/upButton"
         app:layout_constraintTop_toTopOf="@+id/textInputLayout1"
@@ -213,6 +222,7 @@
         android:text=""
         android:layout_marginTop="30dp"
         android:gravity="center"
+        android:accessibilityLiveRegion="polite"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linechart" />
@@ -224,6 +234,7 @@
         android:text=""
         android:layout_marginTop="0dp"
         android:gravity="center"
+        android:accessibilityLiveRegion="polite"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/noiseView" />
@@ -233,8 +244,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Result"
-        android:textSize="50dp"
+        android:textSize="50sp"
         android:layout_marginTop="0dp"
+        android:accessibilityLiveRegion="assertive"
         app:layout_constraintBottom_toTopOf="@+id/barchart"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -245,8 +257,6 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
         android:hint="Site"
         app:layout_constraintBottom_toBottomOf="@+id/textInputLayout2"
         app:layout_constraintEnd_toEndOf="parent"
@@ -258,8 +268,7 @@
             android:id="@+id/siteSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:focusable="false"
-            android:focusableInTouchMode="false" />
+            android:inputType="none" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
