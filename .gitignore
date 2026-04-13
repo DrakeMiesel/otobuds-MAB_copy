@@ -1,0 +1,25 @@
+# Built outputs
+/build/
+/app/build/
+*.apk
+*.aab
+
+# Gradle
+.gradle/
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# NDK
+.cxx/
+app/.cxx/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# FFTW3 intermediate object files (prebuilt .a archives are kept)
+app/fftw3/**/objs/
+app/fftw3/lib/local/
