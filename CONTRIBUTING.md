@@ -10,7 +10,7 @@ That's it -- everything else (JDK, Android SDK, NDK) lives inside the dev contai
 ## Getting Started
 
 ```bash
-git clone https://github.com/blukeg/otobuds.git
+git clone https://github.com/otobuds/otobuds.git
 cd otobuds
 dev
 ```
