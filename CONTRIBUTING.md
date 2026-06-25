@@ -53,6 +53,49 @@ dev build
 
 GitHub Actions automatically builds and tests on every push to `main` and on pull requests. See `.github/workflows/build.yml`.
 
+## Committing Changes
+
+- **Author commits under your own GitHub alias** for this project (e.g. `blukeg`),
+  not a default corporate alias:
+
+  ```bash
+  git config user.name  "blukeg"
+  git config user.email "271641181+blukeg@users.noreply.github.com"
+  ```
+
+  The `<id>+<login>@users.noreply.github.com` form attributes the commit to your
+  GitHub account without exposing a private email.
+- **Do not include AI co-author trailers** (e.g. `Co-authored-by: Copilot ...`).
+  Remove them before pushing.
+- Write a clear subject line plus a body explaining *what* changed and *why*.
+
+## Build Identification
+
+So an installed APK can be traced back to the exact commit/calibration it came
+from, every build stamps identifying info into the app, shown on the **Settings**
+screen:
+
+1. **Provenance** -- injected from git into `BuildConfig` in `app/build.gradle`:
+   short SHA, branch, a readable redaction of the last commit subject, and build
+   time. `versionName` includes the SHA, e.g. `1.0 (0b8a4ba)`.
+   (Requires `buildFeatures.buildConfig = true` under Android Gradle Plugin 8.x.)
+2. **Active calibration** -- resolved at runtime and shown in Settings: phone
+   profile, f2 probe frequencies, and per-frequency volume defaults, e.g.
+   `kassPhone | f2=1900/2900/3900/4900 Hz | vol=0.15/0.45/0.45/0.50`.
+
+When changing per-device calibration, build and confirm the Settings summary
+reflects the expected profile on the target device.
+
+## Pull Requests
+
+- Build succeeds (native ndkBuild + Java) and the Settings build/calibration
+  summary is correct before opening the PR.
+- Use the correct authenticated GitHub account
+  (e.g. `gh auth switch --user blukeg`).
+- Target the default branch (`main`) unless intentionally isolating onto a
+  feature base.
+- The PR description should state what it contains, why, and how it was verified.
+
 ## Project Structure
 
 ```
