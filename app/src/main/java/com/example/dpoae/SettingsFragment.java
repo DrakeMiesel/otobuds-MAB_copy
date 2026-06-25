@@ -78,6 +78,14 @@ public class SettingsFragment extends Fragment {
         final TextView tv8 = view.findViewById(R.id.textView8);
         tv8.setText("Phone ID: "+Constants.phone);
 
+        final TextView buildInfo = view.findViewById(R.id.buildInfo);
+        buildInfo.setText(
+                "Version " + BuildConfig.VERSION_NAME
+                        + "  ·  " + BuildConfig.GIT_BRANCH
+                        + "\n" + BuildConfig.BUILD_LABEL
+                        + "\nBuilt " + BuildConfig.BUILD_TIME
+                        + "\n" + activeCalibrationSummary());
+
         MaterialAutoCompleteTextView autoview = view.findViewById(R.id.filled_exposed_dropdown);
 
         List<String> spinnerArray =  new ArrayList<String>();
@@ -243,6 +251,33 @@ public class SettingsFragment extends Fragment {
                 Constants.SOUND_VOLUME_CHECK  = isChecked;
             }
         });
+    }
+
+    /**
+     * Builds a one-glance summary of the calibration profile that is actually
+     * resolved at runtime. This reflects the important part of the per-device
+     * calibration work (e.g. Kass's kassPhone profile): the selected phone
+     * profile, the f2 probe frequencies, and the per-frequency volume defaults.
+     */
+    private String activeCalibrationSummary() {
+        StringBuilder s = new StringBuilder("Calibration: ").append(Constants.phone);
+        if (Constants.f2 != null && Constants.f2.length > 0) {
+            StringBuilder freqs = new StringBuilder();
+            StringBuilder vols = new StringBuilder();
+            for (int i = 0; i < Constants.f2.length; i++) {
+                if (i > 0) {
+                    freqs.append("/");
+                    vols.append("/");
+                }
+                freqs.append(Constants.f2[i]);
+                Float v = Constants.vol1LookupDefaults != null
+                        ? Constants.vol1LookupDefaults.get(Constants.f2[i]) : null;
+                vols.append(v != null ? String.format("%.2f", v) : "?");
+            }
+            s.append("\nf2=").append(freqs).append(" Hz");
+            s.append("\nvol=").append(vols);
+        }
+        return s.toString();
     }
 
     @Override
