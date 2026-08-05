@@ -1,5 +1,35 @@
 apply plugin: 'com.android.application'
 
+// --- Build identification helpers --------------------------------------------
+// Pulls metadata from git so each build can be traced back to the exact commit
+// it was produced from. Falls back to safe placeholders when git is unavailable
+// (e.g. building from a source archive).
+def gitOutput = { String... cmd ->
+    try {
+        def out = new ByteArrayOutputStream()
+        exec {
+            commandLine cmd
+            standardOutput = out
+            errorOutput = new ByteArrayOutputStream()
+            ignoreExitValue = true
+        }
+        return out.toString().trim()
+    } catch (Exception ignored) {
+        return ""
+    }
+}
+
+def gitSha = { def s = gitOutput('git', 'rev-parse', '--short', 'HEAD'); return s ?: 'unknown' }()
+def gitBranch = { def b = gitOutput('git', 'rev-parse', '--abbrev-ref', 'HEAD'); return b ?: 'unknown' }()
+def gitSubject = { def m = gitOutput('git', 'log', '-1', '--pretty=%s'); return m ?: 'unknown' }()
+// Readable redaction of the last commit message: collapse whitespace and cap
+// the length so it stays compact in the UI while still hinting at the author.
+def buildLabel = {
+    def label = gitSubject.replaceAll('\\s+', ' ').trim()
+    return label.length() > 48 ? label.substring(0, 47) + '\u2026' : label
+}()
+def buildTime = new Date().format("yyyy-MM-dd HH:mm 'UTC'", TimeZone.getTimeZone('UTC'))
+
 android {
     compileSdkVersion 34
 
@@ -8,9 +38,18 @@ android {
         minSdkVersion 29
         targetSdkVersion 34
         versionCode 1
-        versionName "1.0"
+        versionName "1.0 (${gitSha})"
+
+        buildConfigField "String", "GIT_SHA", "\"${gitSha}\""
+        buildConfigField "String", "GIT_BRANCH", "\"${gitBranch}\""
+        buildConfigField "String", "BUILD_LABEL", "\"${buildLabel.replace('\\', '\\\\').replace('"', '\\"')}\""
+        buildConfigField "String", "BUILD_TIME", "\"${buildTime}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 
     buildTypes {

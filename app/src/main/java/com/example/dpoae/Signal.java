@@ -131,8 +131,10 @@ public class Signal {
                     for (int j = 0; j < seglen; j++) {
                         sumbuffer[j] -= out[j];
                     }
-                    for (int j = 0; j < seglen; j++) {
-                        avbuffer[j] = sumbuffer[j] / segcounter;
+                    if (segcounter > 0) {
+                        for (int j = 0; j < seglen; j++) {
+                            avbuffer[j] = sumbuffer[j] / segcounter;
+                        }
                     }
                     spec = MeasureFragment.fftnative(avbuffer, seglen);
                     for (int k = 0; k < spec.length; k++) {
@@ -185,8 +187,10 @@ public class Signal {
 //                            avbuffer[j] = sumbuffer[j] / segcounter;
 //                        }
                     }
-                    for (int j = 0; j < seglen; j++) {
-                        avbuffer[j] = sumbuffer[j] / segcounter;
+                    if (segcounter > 0) {
+                        for (int j = 0; j < seglen; j++) {
+                            avbuffer[j] = sumbuffer[j] / segcounter;
+                        }
                     }
                     spec = MeasureFragment.fftnative(avbuffer, seglen);
                     for (int k = 0; k < spec.length; k++) {
