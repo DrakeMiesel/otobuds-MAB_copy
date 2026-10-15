@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "age_months": 7,
+  "tone_seconds": 2,
+  "bands": [
+    {"f2": 2016, "wav": null},
+    {"f2": 2953, "wav": "synthetic-2953.wav"},
+    {"f2": 3985, "wav": null},
+    {"f2": 4969, "wav": null}
+  ]
+}

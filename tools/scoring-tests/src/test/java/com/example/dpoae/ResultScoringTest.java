@@ -1,5 +1,9 @@
 package com.example.dpoae;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -10,6 +14,32 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ResultScoringTest {
+    @Test
+    void sharedPythonScoringVectors() throws Exception {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                ResultScoringTest.class.getResourceAsStream("/cases.csv"),
+                StandardCharsets.UTF_8))) {
+            assertEquals("case,age_months,band_index,snr,measured,threshold,expected_pass",
+                    reader.readLine());
+            String line;
+            int cases = 0;
+            while ((line = reader.readLine()) != null) {
+                String[] columns = line.split(",", -1);
+                assertEquals(7, columns.length, line);
+                boolean measured = Boolean.parseBoolean(columns[4]);
+                boolean passed = measured && ResultScoring.passesBand(
+                        Double.parseDouble(columns[3]), Double.parseDouble(columns[5]));
+                assertEquals(Boolean.parseBoolean(columns[6]), passed, columns[0]);
+                boolean[] bands = new boolean[4];
+                bands[Integer.parseInt(columns[2])] = passed;
+                assertEquals(passed ? 1 : 0, ResultScoring.countPassingBands(bands),
+                        columns[0]);
+                cases++;
+            }
+            assertTrue(cases > 0);
+        }
+    }
+
     @ParameterizedTest
     @ValueSource(doubles = {4, 5, 6, 10, 11})
     void usesUnroundedSnrAtEachConfiguredThreshold(double threshold) {

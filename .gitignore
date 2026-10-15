@@ -20,6 +20,10 @@ app/.cxx/
 .DS_Store
 Thumbs.db
 
+# Offline Python tools
+.venv/
+__pycache__/
+
 # FFTW3 intermediate object files (prebuilt .a archives are kept)
 app/fftw3/**/objs/
 app/fftw3/lib/local/

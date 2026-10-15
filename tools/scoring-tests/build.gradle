@@ -17,6 +17,9 @@ sourceSets {
             srcDirs = ['../../app/src/main/java']
             include 'com/example/dpoae/ResultScoring.java'
         }
+        test {
+            resources.srcDir '../../test-data/scoring'
+        }
     }
 }
 
