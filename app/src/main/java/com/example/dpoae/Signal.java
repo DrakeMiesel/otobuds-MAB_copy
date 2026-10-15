@@ -277,7 +277,8 @@ public class Signal {
         noise=calc1[1];
 //        }
 
-        double snr=Math.ceil(signal-noise);
+        // Score the unrounded SNR, as saved in the summary CSV.
+        double snr=signal-noise;
 //        Log.e("art",String.format("%.2f %.2f",signal,noise));
         Constants.signal[fidx] = signal;
         Constants.noise[fidx] = noise;
@@ -306,7 +307,7 @@ public class Signal {
 //            Constants.complete[fidx] = true;
 //        }
 //        Log.e("justin","SNR: "+Math.ceil(snr));
-        if (Math.ceil(snr) >= Constants.SNR_THRESHS[fidx]) {
+        if (ResultScoring.passesBand(snr, Constants.SNR_THRESHS[fidx])) {
             Constants.complete[fidx] = true;
         }
 

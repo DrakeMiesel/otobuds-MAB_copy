@@ -7,6 +7,23 @@ on:
     branches: [ main ]
 
 jobs:
+  scoring:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Run desktop scoring regressions
+      run: |
+        chmod +x gradlew
+        ./gradlew -p tools/scoring-tests test
+
   build:
     runs-on: ubuntu-latest
 

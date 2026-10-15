@@ -596,13 +596,7 @@ public class MeasureFragment extends Fragment {
 
     public static boolean checkStatus(Activity a) {
         Log.e("justin","check status");
-        int ncounter=0;
-        for (int i = 0; i < Constants.complete.length; i++) {
-//            Log.e("justin","loop "+Constants.complete[i]);
-            if (Constants.complete[i]) {
-                ncounter++;
-            }
-        }
+        int ncounter = ResultScoring.countPassingBands(Constants.complete);
 
 //        Log.e("justin","ncounter "+ncounter);
 

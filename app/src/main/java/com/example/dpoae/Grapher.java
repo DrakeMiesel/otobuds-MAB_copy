@@ -107,7 +107,7 @@ public class Grapher {
             carray = new int[Constants.complete.length];
             passFlags = new boolean[Constants.complete.length];
             for (int i = 0; i < Constants.complete.length; i++) {
-                boolean passes = Constants.complete[i] || Math.ceil(data.get(i).getY()) >= Constants.SNR_THRESHS[i];
+                boolean passes = Constants.complete[i] || ResultScoring.passesBand(Constants.snrs[i], Constants.SNR_THRESHS[i]);
                 passFlags[i] = passes;
                 if (passes) {
                     Log.e("justin","colorgreen-"+i);
@@ -130,7 +130,7 @@ public class Grapher {
             for (int i = 0; i < passFlags.length && i < data.size(); i++) {
                 int freqHz = i < Constants.octaves.size() ? Constants.octaves.get(i) : 0;
                 int freqKHz = (int) Math.round(freqHz / 1000.0);
-                int snr = (int) Math.ceil(data.get(i).getY());
+                String snr = String.format(java.util.Locale.US, "%.1f", data.get(i).getY());
                 String outcome = passFlags[i] ? "Pass" : "Refer";
                 desc.append(" ").append(freqKHz).append(" kHz: ").append(snr).append(" dB, ").append(outcome).append(".");
             }

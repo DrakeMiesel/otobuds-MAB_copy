@@ -27,7 +27,7 @@ public class MyValueFormatter extends ValueFormatter {
 
     @Override
     public String getBarLabel(BarEntry barEntry) {
-        String snr = new DecimalFormat("##").format(barEntry.getY());
+        String snr = new DecimalFormat("0.0").format(barEntry.getY());
         if (passFlags != null && Constants.octaves != null) {
             // Match the bar's X value (freq in kHz) to its index in octaves
             for (int i = 0; i < Constants.octaves.size() && i < passFlags.length; i++) {

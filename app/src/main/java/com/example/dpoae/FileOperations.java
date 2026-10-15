@@ -301,7 +301,7 @@ public class FileOperations {
             }
             int counter=0;
             for (Double i : snr) {
-                if (i >= Constants.SNR_THRESHS[counter]) {
+                if (ResultScoring.passesBand(i, Constants.SNR_THRESHS[counter])) {
                     outfile.append("true,");
                 }
                 else {
