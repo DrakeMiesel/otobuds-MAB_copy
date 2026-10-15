@@ -96,6 +96,30 @@ reflects the expected profile on the target device.
   feature base.
 - The PR description should state what it contains, why, and how it was verified.
 
+## Probe presets
+
+The Probe screen can save the current settings under a name, load a preset, or
+reset only the probe settings to the existing phone defaults. Press **Done** to
+apply each manual edit before saving. Editing a loaded preset shows **Custom**
+until the current values are saved again. Preset actions are unavailable while
+probe audio or a measurement is active. Saving is not calibration verification.
+
+Storage reuses the `probe_profiles` JSON preference from `settings-volume-levels`:
+each name maps to four frequencies and Overall/F1/F2 gains, optional reference
+metadata, `onlyLeft`, `savedAt`, `formatVersion: 1`, and a stable UUID `id`.
+Updating a name keeps its ID; saving under another name creates a new ID.
+Legacy presets without a version/ID remain readable and gain an ID when saved;
+ones without channel mode leave the current mode unchanged when loaded.
+Unsupported or corrupt presets report an error rather than replacing stored
+data. Older app builds can still drop fields they do not understand when saving.
+
+Reference metadata is retained for unchanged settings, but cleared when the
+same preset is saved with different frequencies, gains, or recorded channel
+mode. Saving presets does not enable reference comparisons or automatic optimization.
+
+Run the preset regressions with `./gradlew testDebugUnitTest`. They use
+Robolectric with Android preferences and do not require a physical probe.
+
 ## Project Structure
 
 ```

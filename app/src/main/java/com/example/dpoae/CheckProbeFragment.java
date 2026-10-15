@@ -1,6 +1,7 @@
 package com.example.dpoae;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -27,6 +28,7 @@ import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -125,140 +127,23 @@ public class CheckProbeFragment extends Fragment {
                 }
 
                 Integer vv = tryParseInt(v.getText().toString());
-                if (vv == null)
-                {
+                try {
+                    if (vv == null) throw new IllegalArgumentException("Enter an integer frequency in Hz");
+                    Constants.setF2(getActivity(), freqIndex, vv);
+                    refreshProfileSummary();
+                    if (isDrawing) RunNow();
+                } catch (IllegalArgumentException | IllegalStateException e) {
                     v.setText(Constants.f2[freqIndex]+"");
-                }
-                else
-                {
-                    // let's update f1 from f2
-                    int f1 = (int) (vv / 1.22);
-                    int oae = (int) Math.round(2 * f1 - vv);
-                    int oae2 = 2 * vv - f1;
-
-                    // Get old frequencies
-                    int prevF2 = Constants.octaves.get(freqIndex);
-                    int prevF1 = Constants.f1[freqIndex];
-
-                    // let's set f2 to the entered value
-                    Constants.octaves.set(freqIndex, vv);
-                    Constants.f2[freqIndex] = vv;
-
-                    // Update related frequencies
-                    Constants.freqLookup.put(vv, f1);
-                    Constants.oaeLookup.put(vv, oae);
-                    Constants.oaeLookup2.put(vv, oae2);
-                    Constants.f1[freqIndex] = f1;
-
-                    // Update related volume.
-                    Constants.vol1Lookup.put(vv, Constants.vol1Lookup.get(prevF2));
-                    Constants.vol1Lookup.put(f1, Constants.vol1Lookup.get(prevF1));
-                    Constants.vol3Lookup.put(vv, Constants.vol3Lookup.get(prevF2));
-                    Constants.vol3Lookup.put(f1, Constants.vol3Lookup.get(prevF1));
-
-                    // let's persist the new f2 for the frequency index
-                    // Save the new value in preferences
-                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
-                    editor.putInt("f2Value_" + freqIndex, vv);
-                    editor.commit();
-
-                    if (isDrawing) RunNow();
+                    showProfileError(e);
                 }
 
                 return true;
             }
         });
 
-        volumeValueTxt.setOnEditorActionListener(new TextView.OnEditorActionListener()
-        {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId != EditorInfo.IME_ACTION_DONE) {
-                    return false;
-                }
-
-                int f2 = Constants.octaves.get(freqIndex);
-                Float vv = tryParseFloat(v.getText().toString());
-                if (vv == null)
-                {
-                    v.setText(Constants.vol1Lookup.get(f2)+"");
-                }
-                else
-                {
-                    // Save the new value in preferences
-                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
-                    editor.putFloat("volumeValue_" + freqIndex, vv);
-                    editor.commit();
-
-                    Constants.vol1Lookup.put(f2, vv);
-
-                    // Refresh the running params
-                    if (isDrawing) RunNow();
-                }
-
-                return true;
-            }
-        });
-
-        volumeF2te.setOnEditorActionListener(new TextView.OnEditorActionListener()
-        {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId != EditorInfo.IME_ACTION_DONE) {
-                    return false;
-                }
-
-                Float volumeValue = tryParseFloat(v.getText().toString());
-                int f2 = Constants.octaves.get(freqIndex);
-                if (volumeValue == null)
-                {
-                    v.setText(Constants.vol3Lookup.get(f2)+"");
-                }
-                else
-                {
-                    // Save the new value in preferences
-                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
-                    editor.putFloat("volumeF2te_" + freqIndex, volumeValue);
-                    editor.commit();
-
-                    Constants.vol3Lookup.put(f2, volumeValue);
-
-                    // Refresh the running params
-                    if (isDrawing) RunNow();
-                }
-
-                return true;
-            }
-        });
-
-        volumeF1te.setOnEditorActionListener(new TextView.OnEditorActionListener()
-        {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId != EditorInfo.IME_ACTION_DONE) {
-                    return false;
-                }
-                Float volumeValue = tryParseFloat(v.getText().toString());
-                int f2 = Constants.octaves.get(freqIndex);
-                int f1 = Constants.freqLookup.get(f2);
-                if (volumeValue == null) {
-                    v.setText(Constants.vol3Lookup.get(f1) + "");
-                } else {
-                    // Save the new value in preferences
-                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
-                    editor.putFloat("volumeF1te_" + freqIndex, volumeValue);
-                    editor.commit();
-
-                    // Update the in memory volume that is shared.
-                    Constants.vol3Lookup.put(f1, volumeValue);
-
-                    // Refresh the running params
-                    if (isDrawing) RunNow();
-                }
-
-                return true;
-            }
-        });
+        volumeValueTxt.setOnEditorActionListener((v, actionId, event) -> updateVolume(v, actionId, 0));
+        volumeF1te.setOnEditorActionListener((v, actionId, event) -> updateVolume(v, actionId, 1));
+        volumeF2te.setOnEditorActionListener((v, actionId, event) -> updateVolume(v, actionId, 2));
 
         buttonDraw.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
@@ -272,6 +157,7 @@ public class CheckProbeFragment extends Fragment {
                     buttonDraw.setText("Start");
                     StopSpeakersAndMic();
                 }
+                updatePresetButtons();
             }
         });
 
@@ -279,10 +165,6 @@ public class CheckProbeFragment extends Fragment {
         ((RadioButton)view.findViewById(R.id.khz3)).setChecked(true);
 
         view.setVisibility(View.VISIBLE);
-        int w = view.getWidth();
-        int h = view.getHeight();
-        surfaceView.getHolder().setFixedSize(w - 100, h - 100);
-
         surfaceView.setVisibility(View.VISIBLE);
         surfaceView.bringToFront();
         surfaceView.setZOrderOnTop(true);
@@ -351,6 +233,132 @@ public class CheckProbeFragment extends Fragment {
         volumeF1te.setText(Constants.vol3Lookup.get(f1) + "");
     }
 
+    private boolean updateVolume(TextView editor, int actionId, int column) {
+        if (actionId != EditorInfo.IME_ACTION_DONE) return false;
+        try {
+            Float value = tryParseFloat(editor.getText().toString());
+            if (value == null) throw new IllegalArgumentException("Enter a volume between 0 and 1");
+            ProbeProfiles.Profile p = ProbeProfiles.current();
+            float[] gains = column == 0 ? p.base : column == 1 ? p.f1v : p.f2v;
+            gains[freqIndex] = value;
+            ProbeProfiles.validate(p);
+            String[] keys = {"volumeValue_", "volumeF1te_", "volumeF2te_"};
+            ProbeProfiles.commit(PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
+                    .putFloat(keys[column] + freqIndex, value));
+            int f2 = Constants.octaves.get(freqIndex);
+            if (column == 0) Constants.vol1Lookup.put(f2, value);
+            else Constants.vol3Lookup.put(column == 1 ? Constants.freqLookup.get(f2) : f2, value);
+            refreshProfileSummary();
+            if (isDrawing) RunNow();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            showProfileError(e);
+        }
+        refreshEditor();
+        return true;
+    }
+
+    private void refreshEditor() {
+        freqIndex = -1;
+        UpdateFreqIndex();
+    }
+
+    private void updatePresetButtons() {
+        boolean enabled = !ProbeProfiles.isBusy();
+        view.findViewById(R.id.profileSave).setEnabled(enabled);
+        view.findViewById(R.id.profileLoad).setEnabled(enabled);
+        view.findViewById(R.id.profileReset).setEnabled(enabled);
+    }
+
+    private void refreshProfileSummary() {
+        TextView label = view.findViewById(R.id.profileStatus);
+        try {
+            label.setText("Preset: " + ProbeProfiles.activeLabel(getActivity()));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            label.setText("Preset storage unavailable");
+            showProfileError(e);
+        }
+    }
+
+    private void showProfileError(RuntimeException e) {
+        Log.e("ProbeProfiles", e.getMessage(), e);
+        Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+    }
+
+    private void loadProfile(String name) {
+        try {
+            if (name.equals(ProbeProfiles.defaultsName())) {
+                ProbeProfiles.applyDefaults(getActivity());
+            } else {
+                ProbeProfiles.Profile p = ProbeProfiles.get(getActivity(), name);
+                if (p == null) throw new IllegalArgumentException("Preset no longer exists: " + name);
+                ProbeProfiles.apply(getActivity(), name, p);
+            }
+            refreshEditor();
+            refreshProfileSummary();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            showProfileError(e);
+        }
+    }
+
+    private void loadProfileDialog() {
+        try {
+            ProbeProfiles.requireIdle();
+            String[] names = ProbeProfiles.names(getActivity()).toArray(new String[0]);
+            new AlertDialog.Builder(getActivity()).setTitle("Load preset")
+                    .setItems(names, (dialog, index) -> loadProfile(names[index])).show();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            showProfileError(e);
+        }
+    }
+
+    private void saveProfileDialog() {
+        try {
+            ProbeProfiles.requireIdle();
+            ProbeProfiles.Profile p = ProbeProfiles.current();
+            if (Integer.parseInt(((EditText) view.findViewById(R.id.f2Value)).getText().toString()) != p.f2[freqIndex]
+                    || Float.parseFloat(((EditText) view.findViewById(R.id.volumeValue)).getText().toString()) != p.base[freqIndex]
+                    || Float.parseFloat(((EditText) view.findViewById(R.id.volumeF1v)).getText().toString()) != p.f1v[freqIndex]
+                    || Float.parseFloat(((EditText) view.findViewById(R.id.volumeF2v)).getText().toString()) != p.f2v[freqIndex]) {
+                throw new IllegalStateException("Press Done to apply edited values before saving");
+            }
+            EditText input = new EditText(getActivity());
+            input.setSingleLine(true);
+            input.setHint("Preset name");
+            String active = ProbeProfiles.active(getActivity());
+            if (!active.equals(ProbeProfiles.defaultsName())) input.setText(active);
+            AlertDialog dialog = new AlertDialog.Builder(getActivity()).setTitle("Save preset")
+                    .setMessage("Save the current settings. This does not verify calibration.")
+                    .setView(input).setPositiveButton("Save", null)
+                    .setNegativeButton("Cancel", null).create();
+            dialog.setOnShowListener(ignored -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String name = input.getText().toString().trim();
+                try {
+                    ProbeProfiles.Profile existing = ProbeProfiles.get(getActivity(), name);
+                    if (existing == null) saveProfile(name, dialog);
+                    else new AlertDialog.Builder(getActivity()).setTitle("Replace preset?")
+                            .setMessage("Replace the saved settings for " + name + "?")
+                            .setPositiveButton("Replace", (d, which) -> saveProfile(name, dialog))
+                            .setNegativeButton("Cancel", null).show();
+                } catch (IllegalArgumentException | IllegalStateException e) {
+                    showProfileError(e);
+                }
+            }));
+            dialog.show();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            showProfileError(e);
+        }
+    }
+
+    private void saveProfile(String name, AlertDialog dialog) {
+        try {
+            ProbeProfiles.save(getActivity(), name, ProbeProfiles.current());
+            refreshProfileSummary();
+            dialog.dismiss();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            showProfileError(e);
+        }
+    }
+
     private void RunNow()
     {
         int freq = Constants.octaves.get(freqIndex);
@@ -412,9 +420,10 @@ public class CheckProbeFragment extends Fragment {
         text.setTextSize(60);
         paint.setColor(Color.GREEN);
         paint.setStrokeWidth(5);
-        int ww = view.getWidth();
-        int hh = view.getHeight();
-        surfaceView.getHolder().setFixedSize(ww - 200, hh - 200);
+        int ww = surfaceView.getWidth();
+        int hh = surfaceView.getHeight();
+        if (ww <= 0 || hh <= 0) return;
+        surfaceView.getHolder().setFixedSize(ww, hh);
 
         canvas = surfaceView.getHolder().lockCanvas();
         if (canvas == null) {
@@ -555,6 +564,10 @@ public class CheckProbeFragment extends Fragment {
 
     public void initView(View view) {
         Log.e("asdf", "SET CHECKED ");
+        view.findViewById(R.id.profileSave).setOnClickListener(v -> saveProfileDialog());
+        view.findViewById(R.id.profileLoad).setOnClickListener(v -> loadProfileDialog());
+        view.findViewById(R.id.profileReset).setOnClickListener(v -> loadProfile(ProbeProfiles.defaultsName()));
+        refreshProfileSummary();
     }
 
     @Override
@@ -564,6 +577,8 @@ public class CheckProbeFragment extends Fragment {
         Constants.CheckProbeFragment = this;
         this.isRunning=true;
         this.isDrawing=false;
+        refreshProfileSummary();
+        updatePresetButtons();
     }
 
     @Override

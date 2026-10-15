@@ -166,6 +166,7 @@ public class Constants {
     static int[] f2=new int[4];
     static int[] oaes=new int[4];
     static int[] oaes2=new int[4];
+    static int[] f2Defaults=new int[4];
 
     static String android_id;
     public static void init(Context context) {
@@ -243,6 +244,7 @@ public class Constants {
             f2[3]=4969;
         }
 
+        f2Defaults = f2.clone();
         freqs=new boolean[f2.length];
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         for (int i = 0; i < freqs.length; i++) {
@@ -311,6 +313,39 @@ public class Constants {
             /////////////////////////////////////////??
             populateVolume(context);
         }
+    }
+
+    static void setProbeFrequencies(int[] frequencies) {
+        f2 = frequencies.clone();
+        f1 = new int[4];
+        oaes = new int[4];
+        oaes2 = new int[4];
+        octaves.clear();
+        freqLookup.clear();
+        oaeLookup.clear();
+        oaeLookup2.clear();
+        vol1LookupDefaults.clear();
+        vol1Lookup.clear();
+        vol3Lookup.clear();
+        for (int i = 0; i < 4; i++) {
+            f1[i] = (int) (f2[i] / 1.22);
+            oaes[i] = 2 * f1[i] - f2[i];
+            oaes2[i] = 2 * f2[i] - f1[i];
+            octaves.add(f2[i]);
+            freqLookup.put(f2[i], f1[i]);
+            oaeLookup.put(f2[i], oaes[i]);
+            oaeLookup2.put(f2[i], oaes2[i]);
+        }
+    }
+
+    static void setF2(Context context, int index, int newF2) {
+        ProbeProfiles.Profile p = ProbeProfiles.current();
+        p.f2[index] = newF2;
+        ProbeProfiles.validate(p);
+        ProbeProfiles.commit(PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putInt("f2Value_" + index, newF2));
+        setProbeFrequencies(p.f2);
+        ProbeProfiles.reloadVolumes(context);
     }
 
     public static void populateVolume(Context context) {

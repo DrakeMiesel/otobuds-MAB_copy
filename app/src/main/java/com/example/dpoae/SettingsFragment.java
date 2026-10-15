@@ -261,6 +261,12 @@ public class SettingsFragment extends Fragment {
      */
     private String activeCalibrationSummary() {
         StringBuilder s = new StringBuilder("Calibration: ").append(Constants.phone);
+        try {
+            s.append("\nPreset: ").append(ProbeProfiles.activeLabel(getActivity()));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            Log.e("ProbeProfiles", e.getMessage(), e);
+            s.append("\nPreset storage unavailable");
+        }
         if (Constants.f2 != null && Constants.f2.length > 0) {
             StringBuilder freqs = new StringBuilder();
             StringBuilder vols = new StringBuilder();
