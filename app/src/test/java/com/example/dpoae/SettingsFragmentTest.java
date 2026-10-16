@@ -205,14 +205,7 @@ public class SettingsFragmentTest {
         controller = Robolectric.buildActivity(AppCompatActivity.class);
         controller.get().setTheme(R.style.AppTheme);
         AppCompatActivity activity = controller.setup().get();
-        SettingsFragment fragment = new SettingsFragment() {
-            @Override
-            public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle state) {
-                View view = inflater.inflate(R.layout.settings, container, false);
-                initView(view);
-                return view;
-            }
-        };
+        SettingsFragment fragment = new TestSettingsFragment();
         activity.getSupportFragmentManager().beginTransaction()
                 .add(android.R.id.content, fragment).commitNow();
         view = fragment.requireView();
@@ -221,5 +214,14 @@ public class SettingsFragmentTest {
     private EditText field(int band, int column) {
         LinearLayout table = view.findViewById(R.id.volumeTable);
         return (EditText) ((LinearLayout) table.getChildAt(band + 1)).getChildAt(column + 1);
+    }
+
+    public static class TestSettingsFragment extends SettingsFragment {
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle state) {
+            View view = inflater.inflate(R.layout.settings, container, false);
+            initView(view);
+            return view;
+        }
     }
 }
