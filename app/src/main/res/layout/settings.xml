@@ -179,6 +179,54 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/volumeLevelsTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:text="Volume levels"
+        android:textSize="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/check3" />
+
+    <TextView
+        android:id="@+id/volumeLevelsHint"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:text="Fraction of full scale (0-1). Base sets the speaker volume; f1/f2 scale each tone. Applied from the next test."
+        android:textSize="12dp"
+        android:textColor="#888888"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/volumeLevelsTitle" />
+
+    <!-- One row per test frequency, populated in SettingsFragment.initVolumeTable -->
+    <LinearLayout
+        android:id="@+id/volumeTable"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/volumeLevelsHint" />
+
+    <Button
+        android:id="@+id/resetVolumes"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:text="Reset volumes to phone defaults"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/volumeTable" />
+
+    <TextView
         android:id="@+id/buildInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -191,7 +239,7 @@
         android:text="Build"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/check3" />
+        app:layout_constraintTop_toBottomOf="@+id/resetVolumes" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
