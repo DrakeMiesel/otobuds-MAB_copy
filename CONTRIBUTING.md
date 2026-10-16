@@ -120,6 +120,11 @@ mode. Saving presets does not enable reference comparisons or automatic optimiza
 Run the preset regressions with `./gradlew testDebugUnitTest`. They use
 Robolectric with Android preferences and do not require a physical probe.
 
+Settings also exposes the existing per-band Base/f1/f2 gains in a table.
+Valid edits apply immediately for the next test; edits and volume reset are
+blocked during audio. Resetting volumes leaves frequencies, channel mode,
+saved presets, and other settings unchanged.
+
 ## Project Structure
 
 ```
