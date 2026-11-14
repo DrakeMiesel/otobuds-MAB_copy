@@ -102,6 +102,7 @@ public class Constants {
     // Final positive-frequency power spectrum for each of the four DPOAE measurements.
     // Values are squared FFT magnitudes; they are not calibrated SPL.
     static double[][] spectrumData;
+    static double[] spectrumBinWidthHz;
 
     public enum Frequency {
         Daily,Weekly,Monthly
