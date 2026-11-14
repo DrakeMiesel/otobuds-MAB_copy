@@ -238,6 +238,12 @@ public class Signal {
         }
 
         getMinMax(signals);
+        // Save the final averaged power spectrum for optional diagnostic display.
+        // FFT output is symmetric for real-valued audio, so only non-negative
+        // frequencies (DC through Nyquist) are needed.
+        if (Constants.spectrumData != null && fidx >= 0 && fidx < Constants.spectrumData.length) {
+            Constants.spectrumData[fidx] = Arrays.copyOf(spec, spec.length / 2 + 1);
+        }
 //        String arr = Arrays.toString(spec);
         double[] calcf1=calcSNR(spec, seglen, freq1);
         double[] calcf2=calcSNR(spec, seglen, freq2);
