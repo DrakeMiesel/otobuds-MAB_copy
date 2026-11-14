@@ -753,7 +753,10 @@ public class MeasureFragment extends Fragment {
         if (spectrum == null || spectrum.length == 0) return;
 
         ArrayList<Entry> entries = new ArrayList<>();
-        double binWidthHz = (double) Constants.samplingRate / Constants.PROCESS_WINDOW_LENGTH;
+        double binWidthHz = (Constants.spectrumBinWidthHz != null && fidx < Constants.spectrumBinWidthHz.length
+                && Constants.spectrumBinWidthHz[fidx] > 0)
+                ? Constants.spectrumBinWidthHz[fidx]
+                : (double) Constants.samplingRate / Constants.PROCESS_WINDOW_LENGTH;
         // Show 0-8 kHz, which contains the primary tones and expected DPOAE response.
         int maxBin = Math.min(spectrum.length - 1, (int) Math.floor(8000.0 / binWidthHz));
         for (int bin = 0; bin <= maxBin; bin++) {
