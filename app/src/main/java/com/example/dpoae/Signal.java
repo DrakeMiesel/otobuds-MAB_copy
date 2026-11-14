@@ -243,6 +243,9 @@ public class Signal {
         // frequencies (DC through Nyquist) are needed.
         if (Constants.spectrumData != null && fidx >= 0 && fidx < Constants.spectrumData.length) {
             Constants.spectrumData[fidx] = Arrays.copyOf(spec, spec.length / 2 + 1);
+            if (Constants.spectrumBinWidthHz != null && fidx < Constants.spectrumBinWidthHz.length) {
+                Constants.spectrumBinWidthHz[fidx] = (double) Constants.samplingRate / seglen;
+            }
         }
 //        String arr = Arrays.toString(spec);
         double[] calcf1=calcSNR(spec, seglen, freq1);
