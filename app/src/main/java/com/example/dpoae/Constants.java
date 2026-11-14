@@ -99,6 +99,9 @@ public class Constants {
     static int SEAL_OCCLUSION_THRESH=500;
 
     static LinkedList<short[]> fullrec;
+    // Final positive-frequency power spectrum for each of the four DPOAE measurements.
+    // Values are squared FFT magnitudes; they are not calibrated SPL.
+    static double[][] spectrumData;
 
     public enum Frequency {
         Daily,Weekly,Monthly
