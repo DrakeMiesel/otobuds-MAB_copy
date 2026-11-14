@@ -39,6 +39,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -50,6 +51,9 @@ import androidx.fragment.app.Fragment;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -77,6 +81,7 @@ import java.util.Random;
 public class MeasureFragment extends Fragment {
 
     Button leftButton,rightButton;
+    Button spectrumButton;
     Button cancelButton;
     ExtendedBarChart barChart;
     LineChart lineChart;
@@ -99,6 +104,13 @@ public class MeasureFragment extends Fragment {
         ((MainActivity) getActivity()).getSupportActionBar().hide();
         barChart = view.findViewById(R.id.barchart);
         lineChart = view.findViewById(R.id.linechart);
+        spectrumButton = view.findViewById(R.id.spectrumButton);
+        spectrumButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSpectrumDialog();
+            }
+        });
         Log.e("justin","start measure");
 //        Grapher.graphHelper(barChart, getActivity(), dummyData());
 //        Grapher.graphHelper2(getActivity(), lineChart, dummyLineData2(), dummyLineData());
@@ -671,6 +683,121 @@ public class MeasureFragment extends Fragment {
 
     AsyncTask<Integer,Void,Void> measure;
     OfflineRecorder rec;
+
+    /**
+     * Opens the diagnostic spectrum captured for each tone pair in the current test.
+     * This displays the final averaged FFT power spectrum used by Signal.work().
+     */
+    private void showSpectrumDialog() {
+        if (getActivity() == null) return;
+
+        final ArrayList<Integer> availableIndices = new ArrayList<>();
+        final ArrayList<String> labels = new ArrayList<>();
+        if (Constants.spectrumData != null) {
+            for (int i = 0; i < Constants.spectrumData.length; i++) {
+                if (Constants.spectrumData[i] != null && Constants.spectrumData[i].length > 0) {
+                    availableIndices.add(i);
+                    labels.add(String.format(java.util.Locale.US, "%.0f Hz (f2)", (double) Constants.f2[i]));
+                }
+            }
+        }
+
+        if (availableIndices.isEmpty()) {
+            new AlertDialog.Builder(getActivity())
+                    .setTitle("Frequency spectrum")
+                    .setMessage("No spectrum is available yet. Run a measurement first.")
+                    .setPositiveButton("OK", null)
+                    .show();
+            return;
+        }
+
+        LinearLayout content = new LinearLayout(getActivity());
+        content.setOrientation(LinearLayout.VERTICAL);
+        int pad = (int) (12 * getResources().getDisplayMetrics().density);
+        content.setPadding(pad, pad, pad, 0);
+
+        Spinner toneSelector = new Spinner(getActivity());
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_spinner_item, labels);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        toneSelector.setAdapter(adapter);
+        content.addView(toneSelector, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        LineChart spectrumChart = new LineChart(getActivity());
+        content.addView(spectrumChart, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (int) (430 * getResources().getDisplayMetrics().density)));
+
+        AlertDialog dialog = new AlertDialog.Builder(getActivity())
+                .setTitle("Frequency power spectrum")
+                .setView(content)
+                .setPositiveButton("Close", null)
+                .create();
+
+        toneSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View selectedView, int position, long id) {
+                updateSpectrumChart(spectrumChart, availableIndices.get(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
+
+        dialog.show();
+    }
+
+    private void updateSpectrumChart(LineChart chart, int fidx) {
+        double[] spectrum = Constants.spectrumData[fidx];
+        if (spectrum == null || spectrum.length == 0) return;
+
+        ArrayList<Entry> entries = new ArrayList<>();
+        double binWidthHz = (double) Constants.samplingRate / Constants.PROCESS_WINDOW_LENGTH;
+        // Show 0-8 kHz, which contains the primary tones and expected DPOAE response.
+        int maxBin = Math.min(spectrum.length - 1, (int) Math.floor(8000.0 / binWidthHz));
+        for (int bin = 0; bin <= maxBin; bin++) {
+            double power = Math.max(spectrum[bin], 1.0e-12);
+            float powerDb = (float) (10.0 * Math.log10(power));
+            entries.add(new Entry((float) (bin * binWidthHz / 1000.0), powerDb));
+        }
+
+        LineDataSet dataSet = new LineDataSet(entries, "Power spectrum");
+        dataSet.setDrawCircles(false);
+        dataSet.setDrawValues(false);
+        dataSet.setLineWidth(1.25f);
+        dataSet.setMode(LineDataSet.Mode.LINEAR);
+
+        chart.setData(new LineData(dataSet));
+        chart.getDescription().setEnabled(false);
+        chart.getLegend().setEnabled(false);
+        chart.setTouchEnabled(true);
+        chart.setDragEnabled(true);
+        chart.setScaleXEnabled(true);
+        chart.setScaleYEnabled(true);
+        chart.setPinchZoom(true);
+
+        chart.getXAxis().setPosition(com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM);
+        chart.getXAxis().setAxisMinimum(0f);
+        chart.getXAxis().setAxisMaximum((float) Math.min(8.0, Constants.samplingRate / 2000.0));
+        chart.getXAxis().setGranularity(1f);
+        chart.getXAxis().setLabelCount(9, false);
+        chart.getXAxis().setDrawGridLines(true);
+        chart.getXAxis().setAxisLineWidth(1f);
+        chart.getXAxis().removeAllLimitLines();
+
+        chart.getAxisRight().setEnabled(false);
+        chart.getAxisLeft().setDrawGridLines(true);
+        chart.getAxisLeft().setAxisLineWidth(1f);
+
+        // MPAndroidChart renders X-axis limit lines as vertical frequency markers.
+        chart.getXAxis().addLimitLine(new LimitLine(Constants.f1[fidx] / 1000f, "f1"));
+        chart.getXAxis().addLimitLine(new LimitLine(Constants.f2[fidx] / 1000f, "f2"));
+        chart.getXAxis().addLimitLine(new LimitLine(Constants.oaes[fidx] / 1000f, "2f1-f2"));
+
+        chart.invalidate();
+    }
+
     public void measure(String ear) {
         int year = Integer.parseInt(yearText.getText().toString());
         int month = Integer.parseInt(monthText.getText().toString());
@@ -954,6 +1081,7 @@ public class MeasureFragment extends Fragment {
             Constants.noise_f2 = new double[n];
             Constants.snrs_f1 = new double[n];
             Constants.snrs_f2 = new double[n];
+            Constants.spectrumData = new double[n][];
 
             Constants.graphData = new ArrayList<>();
             Constants.lineData1 = new ArrayList<>();
