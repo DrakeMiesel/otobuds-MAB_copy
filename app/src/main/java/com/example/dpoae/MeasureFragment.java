@@ -724,6 +724,11 @@ public class MeasureFragment extends Fragment {
         content.addView(toneSelector, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
+        TextView spectrumInfo = new TextView(getActivity());
+        spectrumInfo.setText("Relative power (dB; not calibrated SPL). X-axis is frequency in kHz.");
+        content.addView(spectrumInfo, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
         LineChart spectrumChart = new LineChart(getActivity());
         content.addView(spectrumChart, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
